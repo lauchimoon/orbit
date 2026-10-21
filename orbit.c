@@ -12,11 +12,14 @@
 #define G        6.674e-11
 #define STEPS    20
 
-#define MAX_TRAIL      250 
+#define MAX_TRAIL      250
 #define SCALE          250.0 / 1.496e11
 #define SCALE_FIGURES  3
 
+#define MAX_STARS      400
+
 Vector2 versor(Vector2 v);
+double rand_float(void);
 
 int main(int argc, char **argv)
 {
@@ -31,14 +34,19 @@ int main(int argc, char **argv)
     Vector2 trail[MAX_TRAIL] = { 0 };
     int trail_idx = 0, trail_len = 0;
 
+    Vector2 stars[MAX_STARS] = { 0 };
+    for (int i = 0; i < MAX_STARS; ++i)
+        stars[i] = (Vector2){ GetRandomValue(0, GetScreenWidth()),
+                              GetRandomValue(0, GetScreenHeight()) };
+
     while (!WindowShouldClose()) {
         double dt = 3600.0;
 
         for (int step = 0; step < STEPS; ++step) {
             double dist = sqrt(sq(r.x) + sq(r.y));
-            double F = G*((mass_planet*mass_sun)/sq(dist));
+            double F = -G*((mass_planet*mass_sun)/sq(dist));
             Vector2 u = versor(r);
-            Vector2 a = { -F*u.x / mass_planet, -F*u.y / mass_planet };
+            Vector2 a = { F*u.x / mass_planet, F*u.y / mass_planet };
 
             // Update velocity
             v.x += a.x*dt;
@@ -57,11 +65,14 @@ int main(int argc, char **argv)
         ClearBackground(BLACK);
         Vector2 sun = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
         Vector2 planet = { sun.x + r.x*SCALE, sun.y + r.y*SCALE };
-        
+
+        for (int i = 0; i < MAX_STARS; ++i)
+            DrawPixelV(stars[i], Fade(WHITE, rand_float()));
+
         for (int i = 0; i < trail_len; ++i) {
             int idx = (trail_idx - 1 - i + MAX_TRAIL) % MAX_TRAIL;
             Vector2 dot = { sun.x + trail[idx].x*SCALE, sun.y + trail[idx].y*SCALE };
-            DrawCircleV(dot, 2, Fade(BLUE, 0.8f));
+            DrawCircleV(dot, 2, Fade(BLUE, 0.8));
         }
 
         DrawCircleV(sun, 6*SCALE_FIGURES, YELLOW);
@@ -77,4 +88,9 @@ inline Vector2 versor(Vector2 v)
 {
     double m = sqrt(sq(v.x) + sq(v.y));
     return (Vector2){ v.x/m, v.y/m };
+}
+
+double rand_float(void)
+{
+    return ((double)GetRandomValue(0, 100))/50.0;
 }
