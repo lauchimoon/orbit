@@ -1,5 +1,6 @@
 # orbit
 (very basic) Orbit simulation in C.
+![](https://github.com/lauchimoon/orbit/blob/main/screenshot.png)
 
 ## Getting started
 You need a C compiler and GNUMake.
