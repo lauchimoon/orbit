@@ -53,12 +53,9 @@ int main(int argc, char **argv)
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse = GetMousePosition();
             Vector2 r_click = { (mouse.x - sun.x)/SCALE, (mouse.y - sun.y)/SCALE };
-            double dist = sqrt(sq(r_click.x) + sq(r_click.y));
 
             r = r_click;
-            double v_orb = sqrt(G * mass_sun / dist);
-            Vector2 u = versor(r);
-            v = (Vector2){ -u.y * v_orb, u.x * v_orb };
+            v = (Vector2){ 0.0, 29780.0 };
 
             trail_idx = 0;
             trail_len = 0;
