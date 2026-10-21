@@ -10,3 +10,4 @@ $ cd orbit
 $ make
 $ ./orbit
 ```
+Make sure to specify `RAYLIB_PATH` when calling `make`.
