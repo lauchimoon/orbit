@@ -72,7 +72,7 @@ int main(int argc, char **argv)
         for (int i = 0; i < trail_len; ++i) {
             int idx = (trail_idx - 1 - i + MAX_TRAIL) % MAX_TRAIL;
             Vector2 dot = { sun.x + trail[idx].x*SCALE, sun.y + trail[idx].y*SCALE };
-            DrawCircleV(dot, 2, Fade(BLUE, 0.8));
+            DrawCircleV(dot, 2, Fade(BLUE, rand_float()));
         }
 
         DrawCircleV(sun, 6*SCALE_FIGURES, YELLOW);
