@@ -13,7 +13,7 @@
 #define STEPS    10
 
 #define MAX_TRAIL      250
-#define SCALE          250.0 / 1.496e11
+#define SCALE          (250.0 / 1.496e11)
 #define SCALE_FIGURES  3
 
 #define MAX_STARS      400
@@ -44,11 +44,30 @@ int main(int argc, char **argv)
                               GetRandomValue(0, GetScreenHeight()) };
 
     bool collision = false;
+    bool placed = true;
 
     while (!WindowShouldClose()) {
         double dt = 3600.0;
+        Vector2 sun = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
 
-        if (!collision) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            Vector2 mouse = GetMousePosition();
+            Vector2 r_click = { (mouse.x - sun.x)/SCALE, (mouse.y - sun.y)/SCALE };
+            double dist = sqrt(sq(r_click.x) + sq(r_click.y));
+
+            r = r_click;
+            double v_orb = sqrt(G * mass_sun / dist);
+            Vector2 u = versor(r);
+            v = (Vector2){ -u.y * v_orb, u.x * v_orb };
+
+            trail_idx = 0;
+            trail_len = 0;
+            collision = false;
+            explosion_anim_counter = 0;
+            placed = true;
+        }
+
+        if (placed && !collision) {
             for (int step = 0; step < STEPS; ++step) {
                 double dist = sqrt(sq(r.x) + sq(r.y));
                 double F = -G*((mass_planet*mass_sun)/sq(dist));
@@ -69,14 +88,13 @@ int main(int argc, char **argv)
         trail_idx = (trail_idx + 1) % MAX_TRAIL;
         trail_len += (trail_len < MAX_TRAIL);
 
-
         BeginDrawing();
         ClearBackground(BLACK);
-        Vector2 sun = { GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
         Vector2 planet = { sun.x + r.x*SCALE, sun.y + r.y*SCALE };
 
         // In case the planet gets a little too close to the sun...
-        if (!collision && CheckCollisionPointCircle(planet, sun, 6*SCALE_FIGURES)) {
+        if (placed && !collision &&
+            CheckCollisionPointCircle(planet, sun, 6*SCALE_FIGURES)) {
             collision = true;
             explosion_anim_counter = 0;
         }
@@ -90,24 +108,28 @@ int main(int argc, char **argv)
             DrawCircleV(dot, 2, Fade(BLUE, rand_float()));
         }
 
-        DrawCircleV(sun, 6*SCALE_FIGURES, YELLOW);
-        if (!collision)
-            DrawCircleV(planet, 6*SCALE_FIGURES, BLUE);
-        else {
-            int total_frames = 7;
-            int frame = explosion_anim_counter / 5;
-            if (frame >= total_frames) frame = total_frames - 1;
-            else {
-                ++explosion_anim_counter;
-                Rectangle src_rec = { (float)(frame * 71), 0.0f, 71.0f, 100.0f };
-                float dest_width = 71.0f * SCALE_FIGURES;
-                float dest_height = 100.0f * SCALE_FIGURES;
-                Rectangle dest_rec = { planet.x, planet.y, dest_width, dest_height };
-                Vector2 origin = { dest_width / 2.0f, dest_height / 2.0f };
-                DrawTexturePro(explosion, src_rec, dest_rec, origin, 0.0f, WHITE);
-            }
+        DrawCircleV(GetMousePosition(), 6*SCALE_FIGURES, Fade(BLUE, 0.6f));
 
-            DrawText(EXPLOSION_TEXT, GetScreenWidth()/2 - MeasureText(EXPLOSION_TEXT, 30)/2, 10, 30, WHITE);
+        DrawCircleV(sun, 6*SCALE_FIGURES, YELLOW);
+        if (placed) {
+            if (!collision)
+                DrawCircleV(planet, 6*SCALE_FIGURES, BLUE);
+            else {
+                int total_frames = 7;
+                int frame = explosion_anim_counter / 5;
+                if (frame >= total_frames) frame = total_frames - 1;
+                else {
+                    ++explosion_anim_counter;
+                    Rectangle src_rec = { (float)(frame * 71), 0.0f, 71.0f, 100.0f };
+                    float dest_width = 71.0f * SCALE_FIGURES;
+                    float dest_height = 100.0f * SCALE_FIGURES;
+                    Rectangle dest_rec = { planet.x, planet.y, dest_width, dest_height };
+                    Vector2 origin = { dest_width / 2.0f, dest_height / 2.0f };
+                    DrawTexturePro(explosion, src_rec, dest_rec, origin, 0.0f, WHITE);
+                }
+
+                DrawText(EXPLOSION_TEXT, GetScreenWidth()/2 - MeasureText(EXPLOSION_TEXT, 30)/2, 10, 30, WHITE);
+            }
         }
         EndDrawing();
     }
