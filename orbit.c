@@ -35,6 +35,7 @@ Vector2 versor(Vector2 v);
 double rand_float(void);
 void textbox_update(TextBox *tb, bool mouse_pressed, Vector2 mouse);
 void textbox_draw(TextBox tb, const char *label);
+void sun_draw(Vector2 sun);
 void sim_console(double x0, double y0, double vx0, double vy0);
 void sim_graphic(void);
 
@@ -121,6 +122,20 @@ void textbox_draw(TextBox tb, const char *label)
         DrawRectangle((int)tb.bounds.x + 8 + tw, (int)tb.bounds.y + 6,
                       2, (int)tb.bounds.height - 12, WHITE);
     }
+}
+
+void sun_draw(Vector2 sun)
+{
+    float radius = 6*SCALE_FIGURES;
+    float add = 0.45f;
+    BeginBlendMode(BLEND_ADDITIVE);
+    DrawCircleGradient(sun, radius*4.0f, Fade(ORANGE, 0.12f + add), BLANK);
+    DrawCircleGradient(sun, radius*2.5f, Fade(GOLD,   0.22f + add), BLANK);
+    DrawCircleGradient(sun, radius*1.5f, Fade(YELLOW, 0.45f + add), BLANK);
+    EndBlendMode();
+
+    DrawCircleV(sun, radius, YELLOW);
+    DrawCircleV(sun, radius*0.65f, WHITE);
 }
 
 void sim_console(double x0, double y0, double vx0, double vy0)
@@ -240,7 +255,7 @@ void sim_graphic(void)
 
         DrawCircleV(GetMousePosition(), 6*SCALE_FIGURES, Fade(BLUE, 0.6f));
 
-        DrawCircleV(sun, 6*SCALE_FIGURES, YELLOW);
+        sun_draw(sun);
         if (placed) {
             if (!collision)
                 DrawCircleV(planet, 6*SCALE_FIGURES, BLUE);
