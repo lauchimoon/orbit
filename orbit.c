@@ -17,7 +17,7 @@
 #define SCALE          (250.0 / 1.496e11)
 #define SCALE_FIGURES  3
 
-#define MAX_STARS      400
+#define MAX_STARS      800
 #define EXPLOSION_TEXT "El planeta ha explotado :("
 
 #define T_MAX    3.156e7
