@@ -258,7 +258,7 @@ void sim_graphic(void)
                     DrawTexturePro(explosion, src_rec, dest_rec, origin, 0.0f, WHITE);
                 }
 
-                DrawText(EXPLOSION_TEXT, GetScreenWidth()/2 - MeasureText(EXPLOSION_TEXT, 30)/2, 10, 30, WHITE);
+                DrawText(EXPLOSION_TEXT, (GetScreenWidth()/2 - MeasureText(EXPLOSION_TEXT, 30)/2) + 150, 10, 30, WHITE);
             }
         }
 
