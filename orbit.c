@@ -177,7 +177,7 @@ void sim_console(double x0, double y0, double vx0, double vy0)
 
 double module(Vector2 v)
 {
-    return sq(v.x) + sq(v.y);
+    return sqrt(sq(v.x) + sq(v.y));
 }
 
 void sim_graphic(int sw, int sh)
@@ -307,7 +307,7 @@ void sim_graphic(int sw, int sh)
         // Information
         DrawText(TextFormat("x:%g y:%g", r0.x, r0.y), 10, GetScreenHeight() - 30, 20, WHITE);
         DrawText(TextFormat("E = %g",
-                            0.5*mass_planet*module(v) - G*mass_planet*mass_sun/module(r)),
+                            0.5*mass_planet*sq(module(v)) - G*mass_planet*mass_sun/module(r)),
                             10, GetScreenHeight() - 60, 20, WHITE);
 
         EndDrawing();
