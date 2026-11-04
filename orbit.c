@@ -13,7 +13,7 @@
 #define G        6.674e-11
 #define STEPS    10
 
-#define MAX_TRAIL      250
+#define MAX_TRAIL      2500
 #define SCALE          (250.0 / 1.496e11)
 #define SCALE_FIGURES  3
 
@@ -37,7 +37,7 @@ void textbox_update(TextBox *tb, bool mouse_pressed, Vector2 mouse);
 void textbox_draw(TextBox tb, const char *label);
 void sun_draw(Vector2 sun);
 void sim_console(double x0, double y0, double vx0, double vy0);
-void sim_graphic(void);
+void sim_graphic(int sw, int sh);
 
 double mass_sun = 1.989e30;
 double mass_planet = 5.972e24;
@@ -59,9 +59,22 @@ int main(int argc, char **argv)
         x0 = atof(argv[2]); y0 = atof(argv[3]);
         vx0 = atof(argv[4]); vy0 = atof(argv[5]);
         sim_console(x0, y0, vx0, vy0);
-    } else if (!strcmp(argv[1], "g"))
-        sim_graphic();
-    else {
+    } else if (!strcmp(argv[1], "g")) {
+        if (argc < 4) {
+            printf("uso: %s g sw sh\n", argv[0]);
+            return 1;
+        }
+
+        int sw, sh;
+        sw = atoi(argv[2]);
+        sh = atoi(argv[3]);
+        if (sw < 800 && sh < 800) {
+            printf("error: sw, sh deben ser mayor que 800\n");
+            return 1;
+        }
+
+        sim_graphic(sw, sh);
+    } else {
         printf("error: opcion '%s' desconocida\n", argv[1]);
         return 1;
     }
@@ -126,7 +139,7 @@ void textbox_draw(TextBox tb, const char *label)
 
 void sun_draw(Vector2 sun)
 {
-    float radius = 6*SCALE_FIGURES;
+    float radius = 10*SCALE_FIGURES;
     float add = 0.45f;
     BeginBlendMode(BLEND_ADDITIVE);
     DrawCircleGradient(sun, radius*4.0f, Fade(ORANGE, 0.12f + add), BLANK);
@@ -162,15 +175,21 @@ void sim_console(double x0, double y0, double vx0, double vy0)
     }
 }
 
-void sim_graphic(void)
+double module(Vector2 v)
 {
-    InitWindow(800, 800, "Orbit Simulation");
+    return sq(v.x) + sq(v.y);
+}
+
+void sim_graphic(int sw, int sh)
+{
+    InitWindow(sw, sh, "Orbit Simulation");
     SetTargetFPS(60);
 
     Texture explosion = LoadTexture("explosion.png");
     int explosion_anim_counter = 0;
 
     Vector2 r = { 1.496e11, 0.0 };
+    Vector2 r0 = r;
     Vector2 v = { 0.0, 29780.0 };
 
     Vector2 trail[MAX_TRAIL] = { 0 };
@@ -203,6 +222,7 @@ void sim_graphic(void)
             Vector2 r_click = { (mouse.x - sun.x)/SCALE, (mouse.y - sun.y)/SCALE };
 
             r = r_click;
+            r0 = r_click;
             v = (Vector2){ (float)atof(vx_box.text), (float)atof(vy_box.text) };
 
             trail_idx = 0;
@@ -253,7 +273,9 @@ void sim_graphic(void)
             DrawCircleV(dot, 2, Fade(BLUE, rand_float()));
         }
 
-        DrawCircleV(GetMousePosition(), 6*SCALE_FIGURES, Fade(BLUE, 0.6f));
+        DrawCircleV(mouse, 6*SCALE_FIGURES, Fade(BLUE, 0.6f));
+        DrawText(TextFormat("%g %g", (mouse.x - sun.x)/SCALE, (mouse.y - sun.y)/SCALE),
+                 mouse.x - 6*SCALE_FIGURES, mouse.y - 6*SCALE_FIGURES, 20, WHITE);
 
         sun_draw(sun);
         if (placed) {
@@ -281,6 +303,12 @@ void sim_graphic(void)
         DrawRectangleRec(ui_panel, Fade(BLACK, 0.6f));
         textbox_draw(vx_box, "Vx (m/s)");
         textbox_draw(vy_box, "Vy (m/s)");
+
+        // Information
+        DrawText(TextFormat("x:%g y:%g", r0.x, r0.y), 10, GetScreenHeight() - 30, 20, WHITE);
+        DrawText(TextFormat("E = %g",
+                            0.5*mass_planet*module(v) - G*mass_planet*mass_sun/module(r)),
+                            10, GetScreenHeight() - 60, 20, WHITE);
 
         EndDrawing();
     }
